@@ -1,33 +1,33 @@
-#!/usr/bin/env python3
 import socket
-import time
 
-#define address & buffer size
-HOST = ""
-PORT = 8001
-BUFFER_SIZE = 1024
+BYTESTOREAD = 4096
+
+#Takes the data recieved and sends it back to client
+def handleConnection(conn, addr):
+    #Close connection socket once done
+    with conn:
+        print(f'Connected to {addr}')
+        response = conn.recv(BYTESTOREAD)
+        while response:
+            conn.send(response)
+            response = conn.recv(BYTESTOREAD)
+
+#Start the server
+def startServer(host: str, port: int):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind((host, port))
+        #Reuse ports to prevent port in use errors
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #Listen for incoming data
+        sock.listen()
+        conn, addr = sock.accept()
+        handleConnection(conn, addr)
 
 def main():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    
-        #QUESTION 3
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        
-        #bind socket to address
-        s.bind((HOST, PORT))
-        #set to listening mode
-        s.listen(2)
-        
-        #continuously listen for connections
-        while True:
-            conn, addr = s.accept()
-            print("Connected by", addr)
-            
-            #recieve data, wait a bit, then send it back
-            full_data = conn.recv(BUFFER_SIZE)
-            time.sleep(0.5)
-            conn.sendall(full_data)
-            conn.close()
+    host = "localhost" #'127.0.01' or wildcard '0.0.0.0' would also work
+    port = 8080
+
+    startServer(host, port)
 
 if __name__ == "__main__":
     main()
