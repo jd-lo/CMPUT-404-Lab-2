@@ -13,21 +13,23 @@ def handleConnection(conn, addr):
             response = conn.recv(BYTESTOREAD)
 
 #Start the server
-def startServer(host: str, port: int):
+def startServer(host: str, port: int, handler: callable):
+    #Func defines how to handle the connection
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.bind((host, port))
         #Reuse ports to prevent port in use errors
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         #Listen for incoming data
-        sock.listen()
-        conn, addr = sock.accept()
-        handleConnection(conn, addr)
+        sock.listen(3)
+        while True:
+            conn, addr = sock.accept()
+            handler(conn, addr)
 
 def main():
     host = "localhost" #'127.0.01' or wildcard '0.0.0.0' would also work
     port = 8080
 
-    startServer(host, port)
+    startServer(host, port, handleConnection)
 
 if __name__ == "__main__":
     main()
