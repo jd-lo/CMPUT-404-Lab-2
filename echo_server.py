@@ -1,4 +1,5 @@
 import socket
+from threading import Thread
 
 BYTESTOREAD = 4096
 
@@ -23,8 +24,9 @@ def startServer(host: str, port: int, handler: callable):
         sock.listen(3)
         while True:
             conn, addr = sock.accept()
-            handler(conn, addr)
-
+            thread = Thread(target = handler, args = (conn, addr))
+            thread.run()
+            
 def main():
     host = "localhost" #'127.0.01' or wildcard '0.0.0.0' would also work
     port = 8080
